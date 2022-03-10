@@ -145,3 +145,28 @@ await contract.methods
   .myMethodA(...args, signature)
   .send({ from: userAddress });
 ```
+
+The `Signer` Node.js class implements provision for an optional cache such as Redis. Pass in the `cache` option on construction and implement the `get` and `set` methods. The cache stores the `uniq` value for a contract indefinately and the `signer` value for a contract for 1 hour. Typically you'd implement the cache interface as follows:
+
+```typescript
+const signer = new Signer({
+  ...
+  cache: {
+    async get(key: string): Promise<string> {
+      const value = await redis.get(key);
+      if (!value) {
+        return null;
+      } else {
+        return JSON.parse(value);
+      }
+    },
+    async set(key: string, value: string, ttl: number): Promise<void> {
+      await redis.setex(key, ttl, JSON.stringify(value));
+    }
+  }
+});
+
+const onRotate = async () => {
+  await redis.del(Signer.SignerCacheKey(contractAddress));
+};
+```
