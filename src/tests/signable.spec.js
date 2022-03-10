@@ -9,19 +9,10 @@ const { Signer } = require('../index');
 const { ZERO_ADDRESS } = require('../utils/address');
 const Example = artifacts.require('Example');
 
-contract('Signable', ([sender]) => {
+contract('Signable', ([sender, sender2]) => {
   let contract;
   let signer;
-
-  const args = [
-    ZERO_ADDRESS,
-    {
-      test1: 123n,
-      test2: 456n,
-      test3: 'hello world',
-    },
-    web3.utils.keccak256('test'),
-  ];
+  let args;
 
   beforeEach(async () => {
     await web3.eth.accounts.wallet.create(3);
@@ -38,6 +29,15 @@ contract('Signable', ([sender]) => {
       address: contract.address,
       web3: web3,
     });
+    args = [
+      ZERO_ADDRESS,
+      {
+        test1: 123n,
+        test2: 456n,
+        test3: 'hello world',
+      },
+      web3.utils.keccak256('test'),
+    ];
   });
 
   it('should sign testA', async () => {
@@ -65,7 +65,7 @@ contract('Signable', ([sender]) => {
     await truffleAssert.reverts(contract.testC(signature, ...args));
   });
 
-  it('rotate signer', async () => {
+  it('should rotate signer', async () => {
     await contract.setSigner(web3.eth.accounts.wallet[1].address);
 
     const signature = await signer.sign(Example.abi, 'testA', sender, ...args);
@@ -74,7 +74,7 @@ contract('Signable', ([sender]) => {
     await truffleAssert.reverts(contract.testA(...args, signature));
   });
 
-  it("rotate signer doesn't reuse signatures", async () => {
+  it("should rotate signer and doesn't reuse signatures", async () => {
     const signature = await signer.sign(Example.abi, 'testA', sender, ...args);
 
     await truffleAssert.passes(contract.testA(...args, signature));
@@ -82,7 +82,7 @@ contract('Signable', ([sender]) => {
     await truffleAssert.reverts(contract.testA(...args, signature));
   });
 
-  it('rotate signer to changed address', async () => {
+  it('should rotate signer to changed address', async () => {
     const signature = await signer.sign(Example.abi, 'testA', sender, ...args);
 
     await contract.setSigner(web3.eth.accounts.wallet[1].address);
@@ -92,7 +92,7 @@ contract('Signable', ([sender]) => {
     await truffleAssert.reverts(contract.testA(...args, signature));
   });
 
-  it('rotate signer to unknown address', async () => {
+  it('should rotate signer to unknown address', async () => {
     await contract.setSigner(sender);
     await expect(signer.sign(Example.abi, 'testA', sender, ...args)).to
       .eventually.be.rejected;
@@ -101,5 +101,23 @@ contract('Signable', ([sender]) => {
     const signature = await signer.sign(Example.abi, 'testA', sender, ...args);
     await truffleAssert.passes(contract.testA(...args, signature));
     await truffleAssert.reverts(contract.testA(...args, signature));
+  });
+
+  it('should not use the signature from a different sender', async () => {
+    const signature = await signer.sign(Example.abi, 'testA', sender, ...args);
+
+    await truffleAssert.reverts(
+      contract.testA(...args, signature, { from: sender2 })
+    );
+  });
+
+  it('should not allow changed parameters', async () => {
+    const signature = await signer.sign(Example.abi, 'testA', sender, ...args);
+
+    args[1].test1 = 124n;
+
+    await truffleAssert.reverts(
+      contract.testA(...args, signature, { from: sender2 })
+    );
   });
 });
