@@ -25,10 +25,9 @@
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
   },
   "include": [
-    "src/**/*.ts", "src/tests/signable.spec.tss",
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",

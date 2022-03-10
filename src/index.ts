@@ -2,7 +2,26 @@ import Web3 from 'web3';
 import { ZERO_ADDRESS } from './utils/address';
 import { AbiItem, AbiInput } from 'web3-utils';
 import * as ethUtil from 'ethereumjs-util';
-import ISignable from '../contracts/ISignable.json';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const ISignable = (() => {
+  let filename;
+  if (
+    fs.existsSync(path.resolve(__dirname, '..', 'contracts', 'ISignable.json'))
+  ) {
+    filename = path.resolve(__dirname, '..', 'contracts', 'ISignable.json');
+  } else {
+    filename = path.resolve(
+      __dirname,
+      '..',
+      '..',
+      'contracts',
+      'ISignable.json'
+    );
+  }
+  return JSON.parse(fs.readFileSync(filename).toString());
+})();
 
 export interface Cache {
   get(key: string): Promise<string>;
