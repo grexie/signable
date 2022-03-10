@@ -18,7 +18,7 @@ jobs:
           path: node_modules
           key: ${{ matrix.node-version }}-${{ runner.OS }}-build-${{ hashFiles('package.json', 'yarn.lock') }}
       - if: steps.cache-modules.outputs.cache-hit != 'true'
-        run: yarn
+        run: yarn --frozen-lockfile
       - run: yarn build
       - run: yarn ganache &
       - name: test
@@ -37,7 +37,7 @@ jobs:
           path: node_modules
           key: ${{ matrix.node-version }}--${{ runner.OS }}-build-${{ hashFiles('package.json', 'yarn.lock') }}
       - if: steps.cache-modules.outputs.cache-hit != 'true'
-        run: yarn
+        run: yarn --frozen-lockfile
       - uses: mikeal/merge-release@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
