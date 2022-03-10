@@ -23,12 +23,14 @@ const ISignable = (() => {
   return JSON.parse(fs.readFileSync(filename).toString());
 })();
 
+export type { AbiItem };
+
 export interface Cache {
   get(key: string): Promise<string>;
   set(key: string, value: string, ttl: number): Promise<string>;
 }
 
-interface KeyStore {
+export interface KeyStore {
   get(address: string): Promise<string>;
 }
 
@@ -37,6 +39,13 @@ export interface SignerOptions {
   address: string;
   web3: Web3;
   cache?: Cache;
+}
+
+export interface Signature {
+  nonce: string;
+  r: string;
+  s: string;
+  v: number;
 }
 
 const extractInputs = (abi: AbiItem): AbiInput[] => {
@@ -186,7 +195,7 @@ class Signer {
     method: string,
     from: string,
     ...args: any[]
-  ) {
+  ): Promise<Signature> {
     const methodAbi = contract.find(
       ({ name, type }) => name === method && type === 'function'
     );
