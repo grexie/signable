@@ -15,7 +15,7 @@
     "ganache": "ganache"
   },
   "peerDependencies": {
-    "web3": "^1.7.1"
+    "web3": ">=1.7.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.0",
